@@ -26,7 +26,6 @@
   --sidebar-width: clamp(235px, 17.6vw, 300px);
   --sheet-gap: 18px;
   --mobile-menu-height: 144px;
-  --paper-mobile-width: 960px;
   --shadow-control: none;
   --duration-fast: 180ms;
 }
