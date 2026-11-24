@@ -1,0 +1,16 @@
+---
+import RedirectPage from '../../components/RedirectPage.astro';
+export function getStaticPaths() {
+  return [
+    { legacy: 'gyup-music-portfolio', path: undefined, target: '' },
+    { legacy: 'gyup-music-portfolio', path: 'profile', target: 'profile/' },
+    { legacy: 'gyup-music-portfolio', path: 'contact', target: 'contact/' },
+    { legacy: 'GYUPSITE', path: 'GYUPSITE/top', target: '' },
+    { legacy: 'GYUPSITE', path: 'GYUPSITE/works', target: '' },
+    { legacy: 'GYUPSITE', path: 'GYUPSITE/profile', target: 'profile/' },
+    { legacy: 'GYUPSITE', path: 'GYUPSITE/contact', target: 'contact/' },
+  ].map(({ legacy, path, target }) => ({ params: { legacy, path }, props: { target: `https://gyu-p.github.io/${target}` } }));
+}
+const { target } = Astro.props;
+---
+<RedirectPage target={target} />

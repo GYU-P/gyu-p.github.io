@@ -7,9 +7,33 @@ import '../styles/tokens.css';
 import '../styles/global.css';
 import '../styles/ink.css';
 interface Props { page: PageId; title: string; description?: string; }
-const { page, title, description = site.description } = Astro.props;
+const { page, title, description = site.pageDescriptions[Astro.props.page] } = Astro.props;
 const documentTitle = page === 'works' ? site.title : `${title} | ${site.title}`;
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+const homeUrl = new URL(import.meta.env.BASE_URL, Astro.site ?? 'https://gyu-p.github.io/').href;
+const person = {
+  '@type': 'Person', '@id': `${homeUrl}#artist`, name: site.name,
+  alternateName: ['GYUP', 'GYU-P'], url: new URL('profile/', homeUrl).href,
+  description: '作詞・作曲・編曲、オリジナル楽曲制作と楽曲提供を手がける音楽クリエイター。',
+  image: new URL(site.avatar, homeUrl).href,
+  sameAs: [site.contactTwitter, 'https://www.youtube.com/@gyup_bokaroP'],
+};
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    ...(page === 'works' ? [{
+      '@type': 'WebSite', '@id': `${homeUrl}#website`, name: site.title,
+      alternateName: ['GYU P', 'GYUP'], url: homeUrl, inLanguage: 'ja',
+      publisher: { '@id': person['@id'] },
+    }] : [{
+      '@type': page === 'profile' ? 'AboutPage' : 'ContactPage', url: canonicalUrl,
+      name: documentTitle, description, inLanguage: 'ja',
+      isPartOf: { '@id': `${homeUrl}#website` }, mainEntity: { '@id': person['@id'] },
+    }]),
+    person,
+  ],
+};
+const verification = import.meta.env.GOOGLE_SITE_VERIFICATION?.trim();
 ---
 <!doctype html>
 <html lang="ja">
@@ -18,13 +42,18 @@ const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href :
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light" />
+    {verification && <meta name="google-site-verification" content={verification} />}
     <title>{documentTitle}</title>
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <meta property="og:site_name" content={site.title} />
     <meta property="og:title" content={documentTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:image" content={person.image} />
+    <meta name="twitter:card" content="summary" />
     {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')} />
     <link rel="icon" href={site.avatar} type="image/png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

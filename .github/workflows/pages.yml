@@ -49,6 +49,7 @@ jobs:
         env:
           SITE_URL: ${{ steps.pages.outputs.origin }}
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          GOOGLE_SITE_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
       - name: Save updated counts without overwriting newer work
         if: github.event_name == 'schedule' || inputs.refresh_views
         shell: bash

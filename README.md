@@ -85,3 +85,15 @@ Music・音楽・曲の表記は作詞・作曲・編曲に展開し、個別の
 ## リポジトリに含めないもの
 
 依存パッケージ、ビルド結果、テスト画像、ローカル取得キャッシュ、`.env`、原案保管用の `reference/` は `.gitignore` で除外します。デザイン参照用のファイルはローカルに保持します。
+
+## 検索エンジン向けの設定
+
+- `/sitemap.xml` は正規URLのトップ・PROFILE・CONTACTだけを掲載します。再生数更新のたびに不正確な最終更新日を付けることはしません。
+- `/robots.txt` でクロールを許可し、サイトマップを案内します。
+- 各ページにcanonical・固有の説明文・OGPを設定し、トップにはWebSiteとPersonの構造化データでサイト名と公式SNSを明示します。
+- `/gyup-music-portfolio/` と、旧 `/GYUPSITE/GYUPSITE/` の既知ページには即時転送とcanonicalを設定します。転送ページはサイトマップに含めません。
+- GitHub Pagesでは任意のHTTP 301を設定できないため、移転ページでは0秒のmeta refreshを使用します。旧サイト側の対応ページも同じ方針で転送します。
+
+Google Search ConsoleはGoogleアカウントで所有権確認が必要です。「URLプレフィックス」に `https://gyu-p.github.io/` を登録します。HTMLタグ方式の `content` の値をリポジトリのActions variable **GOOGLE_SITE_VERIFICATION** に登録して再公開すると、確認タグが静的HTMLに出力されます。この値は公開する確認タグで、APIキーではありません。
+
+所有権確認後、Search Consoleで `https://gyu-p.github.io/sitemap.xml` を送信し、トップ・PROFILE・CONTACTをURL検査してください。公開・サイトマップ設置だけでインデックス登録や上位表示が保証されるわけではありません。XとYouTubeのプロフィール・概要欄などに記載する公式サイトURLも `https://gyu-p.github.io/` に統一してください。
