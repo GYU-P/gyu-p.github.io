@@ -1,4 +1,6 @@
-# GYU P — Music Portfolio
+# GYU P 公式サイト
+
+公開URL: https://gyu-p.github.io/
 
 GYU Pの楽曲制作・楽曲提供を紹介する音楽ポートフォリオです。Astro + TypeScriptで、WORKS・PROFILE・CONTACTの3ページを静的HTMLとして生成します。
 

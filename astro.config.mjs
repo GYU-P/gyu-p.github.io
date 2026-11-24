@@ -1,7 +1,7 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: process.env.SITE_URL || undefined,
+  site: process.env.SITE_URL || 'https://gyu-p.github.io',
   base: process.env.BASE_PATH || '/',
   output: 'static',
   trailingSlash: 'always',
