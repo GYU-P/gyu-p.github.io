@@ -10,14 +10,12 @@ const roles = workRoles(work);
     <span class="work-card__vinyl" aria-hidden="true"></span>
     <span class="work-card__jacket">
       <img src={localUrl(work.image)} alt="" width="500" height="500" loading={index < 4 ? 'eager' : 'lazy'} decoding="async" />
-      <span class="work-card__number" aria-hidden="true">{work.number}</span>
-      <span class="work-card__barcode" aria-hidden="true"></span>
       <span class="work-card__label">{work.title}{work.artist && ` / ${work.artist}`}</span>
     </span>
   </button>
   <template data-work-detail>
     <img class="work-dialog__image" src={localUrl(work.image)} alt={`${work.title}のジャケット`} width="500" height="500" />
-    <p class="work-dialog__category">{work.kind} / {work.sample ? 'SAMPLE' : 'WORK'} {work.number}</p>
+    <p class="work-dialog__category">{work.kind === 'provided' ? '提供曲' : 'オリジナル曲'}</p>
     <h2 id="work-dialog-title">{work.title}</h2>
     <dl class="work-dialog__credits">
       <dt>歌唱</dt><dd>{work.artist || '—'}</dd>
@@ -41,8 +39,6 @@ const roles = workRoles(work);
   .work-card__vinyl::before, .work-card__vinyl::after { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; mix-blend-mode: screen; mask-image: linear-gradient(90deg, transparent 70%, #0009 86%, #000 96%); }
   .work-card__vinyl::before { background: radial-gradient(ellipse 6% 19% at 94% 35%, #e3ecff5e, #b0c6ef2e 49%, transparent), radial-gradient(ellipse 5% 16% at 95% 74%, #cadcff30, transparent), conic-gradient(from 275deg, transparent 0 25deg, #d2e3ff1f 47deg, transparent 67deg); opacity: .88; }
   .work-card__vinyl::after { background: repeating-radial-gradient(circle at 50% 50%, transparent 0 2.7px, #d5e2fd20 3px, transparent 3.5px 5.4px); opacity: .68; }
-  .work-card__number { position: absolute; top: 8px; left: 9px; color: var(--color-ink-label); font: 500 18px/1 var(--font-display); }
-  .work-card__barcode { position: absolute; left: 9px; bottom: 8px; width: 19px; height: 22px; border: 3px solid #faf9f6; outline: 1px solid #78707c38; background: repeating-linear-gradient(90deg, #4d4858 0 1px, transparent 1px 2px, #4d4858 2px 4px, transparent 4px 5px); }
   .work-card--lifted .work-card__vinyl, .work-card--lifted .work-card__jacket { visibility: hidden; }
   @media (max-width: 840px) {
     .work-card__label { padding: 7px 8px; font-size: 11px; }
