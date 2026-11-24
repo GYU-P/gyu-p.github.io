@@ -15,6 +15,7 @@ if (!existsSync(new URL(`../${python}`, import.meta.url))) {
 }
 run(python, ['scripts/import-youtube.py']);
 const memberships = JSON.parse(await readFile(new URL('../.tools/playlist-memberships.json', import.meta.url), 'utf8'));
+const publishedIds = new Set(JSON.parse(await readFile(new URL('../src/data/works.json', import.meta.url), 'utf8')).map(work => work.videoId));
 const videos = [];
 for (const id of new Set(memberships.map(item => item.id))) {
   const response = await fetch(`https://www.youtube.com/watch?v=${id}`, { signal: AbortSignal.timeout(30000) });
@@ -33,10 +34,10 @@ for (const id of new Set(memberships.map(item => item.id))) {
   const meta = player.microformat?.playerMicroformatRenderer;
   if (!details) {
     const reason = player.playabilityStatus?.reason ?? '';
-    if (/非公開動画|アカウントが停止|削除され/.test(JSON.stringify(player.playabilityStatus)) || (player.playabilityStatus?.status === 'ERROR' && /unavailable|removed|private|deleted|terminated/i.test(JSON.stringify(player.playabilityStatus)))) {
-      console.log(`Skipping unavailable video: ${id}`); continue;
-    }
-    throw new Error(`Unable to fetch video: ${id} (${reason})`);
+    // 掲載済みの曲が取得できない場合は、applyでサイトから消える事故を防ぐため停止して報告する。
+    if (publishedIds.has(id)) throw new Error(`Unable to fetch published video: ${id} (${reason}); existing works unchanged`);
+    // 未掲載の動画が非公開・削除などで取得できない場合は、無視して次へ進む。
+    console.log(`Skipping unavailable video: ${id} (${reason})`); continue;
   }
   if (!meta?.publishDate) throw new Error(`Publish date missing: ${id}`);
   videos.push({ id, status: { privacyStatus: 'public', uploadStatus: 'processed' },
