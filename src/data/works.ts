@@ -3,6 +3,7 @@ import records from './works.json';
 export type WorkKind = 'provided' | 'original';
 export interface Work {
   id: string;
+  videoId?: string;
   number: string;
   title: string;
   artist?: string;
@@ -12,9 +13,9 @@ export interface Work {
   publishedAt?: string;
   syncedAt?: string;
   kind: WorkKind;
-  /** 原案の掲載順。公開日を導入する場合はこの順序キーを置き換えます。 */
+  /** 動画公開日時のミリ秒。新しい作品から表示する。 */
   latest: number;
-  /** 人気順の手動スコア。アクセス数の自動取得は行いません。 */
+  /** 最後に取得したYouTube再生数。人気順の並べ替えに使用。 */
   popularity: number;
   image: string;
   description: string;

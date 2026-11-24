@@ -44,7 +44,7 @@ npm run preview
 
 ## 作品データの更新
 
-**現在、定期的な自動更新は設定していません。** 将来の自動更新はMuse側で管理する予定です。サイトのビルド・公開だけではYouTubeへのアクセスも、AIによる補正も行いません。
+**新曲の追加・曲名や歌唱・クレジットの変更はMuseで手動管理します。再生数だけはGitHub Actionsで毎日更新します。** 定期処理が再生リストを取得したり、新しい曲を追加・削除したりすることはありません。
 
 既存54曲は曲名・歌唱名・作詞・作曲・編曲を確認済みです。新規動画や概要欄変更を取り込むときは、次の手順で更新できます。Python 3が必要で、初回はローカルの `.tools/youtube` にyt-dlpを用意します。動画・音声はダウンロードしません。
 
@@ -61,11 +61,21 @@ npm run build
 
 Music・音楽・曲の表記は作詞・作曲・編曲に展開し、個別のクレジットを優先します。このポートフォリオの省略された担当はGYU Pを基本として補完します。共作者・共同編曲者は保持します。概要欄全体や歌詞はサイトに転載しません。
 
-`automation/works-update.txt` は更新時の参考手順です。Codexなどの定期実行を登録する設定ファイルではありません。別途、開発用の `sync:works` はYouTube APIキーが必要ですが、上記の手動更新やサイトの公開には不要です。
+`automation/works-update.txt` はMuseで新曲を追加するときの参考手順です。Codexなどの定期実行を登録する設定ファイルではありません。再生数はボットがコミットするため、Museで作業を始める前に `git pull --ff-only` で最新状態を取得してください。
 
-## GitHub Pagesへの手動公開
+## 再生数の自動更新
 
-`.github/workflows/pages.yml` は **Run workflowから実行する手動公開専用** です。スケジュールやpushでの自動実行はなく、コミット済み作品データからビルドします。作品の自動更新とは別の処理です。
+毎日日本時間6:17ごろ（GitHubの混雑等で遅れる場合あり）、掲載済み動画IDだけをYouTube Data API v3に照会します。更新するのは `src/data/works.json` の `viewCount`・`popularity`・`syncedAt` だけです。WORKSの人気順、歌唱タグの順序、PROFILEの提供曲順が連動します。新曲・曲名・歌唱・クレジット・ジャケット・公開日は変更しません。
+
+設定には、Google CloudでYouTube Data API v3を有効にして発行したAPIキーを使います。GitHubリポジトリの Settings → Secrets and variables → Actions → New repository secret に **YOUTUBE_API_KEY** として登録してください。キーはリポジトリやサイトに埋め込みません。未登録・API通信失敗時は公開処理を停止し、現在の公開サイトを維持します。非公開などで個別に再生数を取得できない動画は、前回値と取得日時を保持します。
+
+取得後に検証・ビルドし、成功した再生数データをボットがコミットしてGitHub Pagesに公開します。途中でMuseが新しいコミットをpushした場合は、古い内容を公開しないよう処理を停止します。
+
+手動で確認するときは、Actions → **Publish site to GitHub Pages** → **Run workflow** の `refresh_views` をオンにします。ローカルでは `.env` に同名のキーを設定して `npm run update:views` を実行できます。APIキーをチャットやコミットに貼り付けないでください。
+
+## GitHub Pagesへの公開
+
+`.github/workflows/pages.yml` は毎日の再生数更新・公開と、**Run workflowからの手動公開** に対応します。pushでは自動実行しません。Museで新曲を追加・pushした後は、手動公開してください。手動公開では `refresh_views` をオフにするとAPIキーなしでコミット済みデータを公開できます。
 
 1. リポジトリの Settings → Pages → Source を **GitHub Actions** に設定。
 2. Actions → **Publish site to GitHub Pages** → **Run workflow** を実行。

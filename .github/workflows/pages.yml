@@ -1,8 +1,16 @@
 name: Publish site to GitHub Pages
 
-# 手動公開のみ。楽曲取得・定期実行・外部AIの呼び出しは行わない。
+# 新曲追加はMuseで手動。定期処理は掲載済み動画の再生数だけを更新する。
 on:
   workflow_dispatch:
+    inputs:
+      refresh_views:
+        description: '再生数を取得してから公開する（YouTube APIキーが必要）'
+        type: boolean
+        default: false
+  schedule:
+    # 日本時間6:17ごろ。GitHub側の混雑などで遅れる場合があります。
+    - cron: '17 21 * * *'
 
 permissions:
   contents: read
@@ -13,9 +21,10 @@ concurrency:
 
 jobs:
   build:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pages: read
     steps:
       - uses: actions/checkout@v4
@@ -29,11 +38,33 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Refresh existing video view counts only
+        if: github.event_name == 'schedule' || inputs.refresh_views
+        run: pnpm run update:views
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+      - run: node --test tests/work-credits.test.mjs tests/works-review.test.mjs tests/view-counts.test.mjs
       - run: pnpm run check
       - run: pnpm run build
         env:
           SITE_URL: ${{ steps.pages.outputs.origin }}
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
+      - name: Save updated counts without overwriting newer work
+        if: github.event_name == 'schedule' || inputs.refresh_views
+        shell: bash
+        run: |
+          git fetch origin "$GITHUB_REF_NAME"
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/$GITHUB_REF_NAME")" ]; then
+            echo 'Repository changed during this run; stop rather than publish stale data.'
+            exit 1
+          fi
+          if ! git diff --quiet -- src/data/works.json; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add src/data/works.json
+            git commit -m 'Update YouTube view counts'
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -1,5 +1,5 @@
 GYU PサイトのWORKSを更新する。作業フォルダは D:\Lab\GYUP-SITE。
-更新担当者がYouTubeの記述から曲名・歌唱・クレジットを判断するための参考手順。現時点で定期実行は設定しない。将来の自動更新はMuse側で管理する。APIキー不要。ローカルデータの更新までを行い、GitHubへのpush・公開は別に行う。
+Museで新曲追加・曲名・歌唱・クレジットを判断するための手動更新手順。新曲の定期取得は行わない。再生数だけは別のGitHub Actionsで毎日更新されるため、作業開始時に git pull --ff-only で最新状態を取得する。新曲の手動取得にはAPIキー不要。GitHubへのpush・手動公開はデータ確認後に行う。
 
 1. npm run prepare:works を実行する。
    .tools/works-import.json に全動画の概要欄など、.tools/works-review.json に新規・記述変更のあった動画が保存される。取得失敗時は既存WORKSを保持して報告する。
