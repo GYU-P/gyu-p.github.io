@@ -1,0 +1,51 @@
+---
+import { localUrl } from '../utils/url';
+import { workRoles, type Work } from '../data/works';
+interface Props { work: Work; index: number; }
+const { work, index } = Astro.props;
+const roles = workRoles(work);
+---
+<article class="work-card" data-work data-kind={work.kind} data-latest={work.latest} data-popularity={work.popularity} data-artist={work.artist ?? ''} data-roles={roles.join(' ')} data-search={`${work.title} ${work.artist ?? ""} ${Object.values(work.credits ?? {}).join(" ")} ${roles.join(" ")} ${work.description}`}>
+  <button class="work-card__button" type="button" aria-label={`${work.title}の詳細`} aria-haspopup="dialog" aria-controls="work-dialog" data-open-work>
+    <span class="work-card__vinyl" aria-hidden="true"></span>
+    <span class="work-card__jacket">
+      <img src={localUrl(work.image)} alt="" width="500" height="500" loading={index < 4 ? 'eager' : 'lazy'} decoding="async" />
+      <span class="work-card__number" aria-hidden="true">{work.number}</span>
+      <span class="work-card__barcode" aria-hidden="true"></span>
+      <span class="work-card__label">{work.title}{work.artist && ` / ${work.artist}`}</span>
+    </span>
+  </button>
+  <template data-work-detail>
+    <img class="work-dialog__image" src={localUrl(work.image)} alt={`${work.title}のジャケット`} width="500" height="500" />
+    <p class="work-dialog__category">{work.kind} / {work.sample ? 'SAMPLE' : 'WORK'} {work.number}</p>
+    <h2 id="work-dialog-title">{work.title}</h2>
+    <dl class="work-dialog__credits">
+      <dt>歌唱</dt><dd>{work.artist || '—'}</dd>
+      <dt>作詞</dt><dd>{work.credits?.lyrics || '—'}</dd>
+      <dt>作曲</dt><dd>{work.credits?.composition || '—'}</dd>
+      <dt>編曲</dt><dd>{work.credits?.arrangement || '—'}</dd>
+    </dl>
+    {work.viewCount != null && <p>{work.viewCount.toLocaleString('ja-JP')} 回再生{work.syncedAt && <small>（{new Date(work.syncedAt).toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo' })} 時点）</small>}</p>}
+    <p class="work-dialog__description">{work.description}</p>
+    {work.url && <a class="text-link" href={work.url} target="_blank" rel="noopener noreferrer">YouTubeで聴く ↗<span class="visually-hidden">（新しいタブで開きます）</span></a>}
+  </template>
+</article>
+<style>
+  .work-card { min-width: 0; position: relative; aspect-ratio: 100 / 94; }
+  .work-card:has(.work-card__button:hover), .work-card:focus-within { z-index: 2; }
+  .work-card__button { display: block; position: relative; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; text-align: left; }
+  .work-card__jacket { position: absolute; top: 0; left: 0; width: calc(100% - 18px); aspect-ratio: 1; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 7px #4437522e; transition: transform 360ms ease, box-shadow 360ms ease; }
+  .work-card__jacket img { width: 100%; height: 100%; object-fit: cover; }
+  .work-card__label { position: absolute; inset: auto 0 0; z-index: 1; padding: 10px 12px; background: rgb(0 0 0 / 62%); color: #fff; font: 500 13px/1.6 var(--font-body); overflow-wrap: anywhere; }
+  .work-card__vinyl { position: absolute; top: 0; left: 0; width: calc(100% - 18px); aspect-ratio: 1; border-radius: 50%; background: url('/images/vinyl.png') center / cover; transform: translateX(26px) scale(.97); filter: brightness(1.18) contrast(.94) saturate(.9); box-shadow: 2px 5px 11px #17152c29, inset 0 0 0 1px #ffffff14; transition: transform 500ms cubic-bezier(.2,.8,.25,1); }
+  .work-card__vinyl::before, .work-card__vinyl::after { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; mix-blend-mode: screen; mask-image: linear-gradient(90deg, transparent 70%, #0009 86%, #000 96%); }
+  .work-card__vinyl::before { background: radial-gradient(ellipse 6% 19% at 94% 35%, #e3ecff5e, #b0c6ef2e 49%, transparent), radial-gradient(ellipse 5% 16% at 95% 74%, #cadcff30, transparent), conic-gradient(from 275deg, transparent 0 25deg, #d2e3ff1f 47deg, transparent 67deg); opacity: .88; }
+  .work-card__vinyl::after { background: repeating-radial-gradient(circle at 50% 50%, transparent 0 2.7px, #d5e2fd20 3px, transparent 3.5px 5.4px); opacity: .68; }
+  .work-card__number { position: absolute; top: 8px; left: 9px; color: var(--color-ink-label); font: 500 18px/1 var(--font-display); }
+  .work-card__barcode { position: absolute; left: 9px; bottom: 8px; width: 19px; height: 22px; border: 3px solid #faf9f6; outline: 1px solid #78707c38; background: repeating-linear-gradient(90deg, #4d4858 0 1px, transparent 1px 2px, #4d4858 2px 4px, transparent 4px 5px); }
+  .work-card--lifted .work-card__vinyl, .work-card--lifted .work-card__jacket { visibility: hidden; }
+  @media (max-width: 840px) {
+    .work-card__label { padding: 7px 8px; font-size: 11px; }
+    .work-card__vinyl { transform: translateX(18px) scale(.97); }
+  }
+</style>

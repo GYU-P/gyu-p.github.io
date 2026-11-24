@@ -1,0 +1,55 @@
+import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import type { Work } from '../src/data/works';
+const works: Work[] = JSON.parse(readFileSync(new URL('../src/data/works.json', import.meta.url), 'utf8'));
+
+test('検索候補の表示・タグ順・文字と複数タグの組み合わせ', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await page.goto('/');
+  const input = page.getByRole('searchbox');
+  const panel = page.locator('[data-search-tags]');
+  const visible = page.locator('[data-work]:visible');
+  await expect(panel).toBeHidden();
+  await input.focus();
+  await expect(panel).toBeVisible();
+  const tags = await panel.locator('[data-search-tag]').allTextContents();
+  expect(tags.slice(0, 3)).toEqual(['作詞', '作曲', '編曲']);
+  const maxViews = new Map<string, number>();
+  for (const work of works) if (work.artist) maxViews.set(work.artist, Math.max(maxViews.get(work.artist) ?? -1, work.viewCount ?? -1));
+  expect(tags.slice(3)).toEqual([...maxViews.keys()].sort((a, b) => maxViews.get(b)! - maxViews.get(a)! || a.localeCompare(b, 'ja')));
+  const singer = (name: string) => panel.locator('[data-search-tag="artist"]').filter({ hasText: name });
+  await singer('みそら').click();
+  await expect(visible).toHaveCount(works.filter(work => work.artist === 'みそら').length);
+  await singer('初音ミク').click();
+  await expect(visible).toHaveCount(works.filter(work => ['みそら', '初音ミク'].includes(work.artist ?? '')).length);
+  await panel.getByRole('button', { name: '作詞', exact: true }).click();
+  await expect(panel.getByRole('button', { name: '作詞', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await input.fill('引きこもり　ミソラ');
+  await expect(visible).toHaveCount(2);
+  await input.fill('存在しない曲xyz');
+  await expect(visible).toHaveCount(0);
+  await panel.locator('[data-search-reset]').click();
+  await expect(input).toHaveValue('');
+  await expect(visible).toHaveCount(works.length);
+  await expect(panel.locator('[aria-pressed="true"]')).toHaveCount(0);
+  await panel.locator('[data-search-close]').click();
+  await expect(panel).toBeHidden();
+});
+
+test('スマホで検索を開いてタグ・入力を使い、閉じても条件を保持する', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto('/');
+  const toggle = page.locator('[data-search-toggle]');
+  await toggle.click();
+  await expect(page.locator('[data-search-tags]')).toBeVisible();
+  await page.locator('[data-search-tag="artist"][data-tag-value="みそら"]').click();
+  await page.getByRole('searchbox').fill('ログイン');
+  await expect(page.locator('[data-work]:visible')).toHaveCount(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole('searchbox').press('Escape');
+  await expect(page.locator('[data-search-tags]')).toBeHidden();
+  await expect(page.locator('[data-work]:visible')).toHaveCount(1);
+  await toggle.click();
+  await expect(page.getByRole('searchbox')).toHaveValue('ログイン');
+  await expect(page.locator('[data-search-tag="artist"][data-tag-value="みそら"]')).toHaveAttribute('aria-pressed', 'true');
+});

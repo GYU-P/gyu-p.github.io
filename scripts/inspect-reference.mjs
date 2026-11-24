@@ -1,0 +1,10 @@
+import { chromium } from '@playwright/test';
+import { pathToFileURL } from 'node:url';
+import { resolve } from 'node:path';
+const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+await page.goto(pathToFileURL(resolve('reference/index.html')).href);
+await page.waitForTimeout(1500);
+await page.screenshot({ path: 'artifacts/reference-desktop.png' });
+console.log(await page.locator('.preview,.main,.console,.controls,.grid,.navbtn,.identity,.medal,.lineblock').evaluateAll(elements => elements.map(e => ({class: e.className, rect: e.getBoundingClientRect().toJSON(), font: getComputedStyle(e).font, margin: getComputedStyle(e).margin, padding: getComputedStyle(e).padding}))));
+await browser.close();

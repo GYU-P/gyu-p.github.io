@@ -1,0 +1,56 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import Icon from '../components/Icon.astro';
+import WorkCard from '../components/WorkCard.astro';
+import SegmentedControl from '../components/SegmentedControl.astro';
+import InkBorder from '../components/InkBorder.astro';
+import { works } from '../data/works';
+import '../styles/works.css';
+const artistViews = new Map<string, number>();
+for (const work of works) {
+  if (work.artist) artistViews.set(work.artist, Math.max(artistViews.get(work.artist) ?? -1, work.viewCount ?? -1));
+}
+const artists = [...artistViews.keys()].sort((a, b) => artistViews.get(b)! - artistViews.get(a)! || a.localeCompare(b, 'ja'));
+---
+<SiteLayout page="works" title="WORKS">
+  <h1 class="visually-hidden">WORKS</h1>
+  <works-gallery>
+    <div class="works-toolbar" data-toolbar hidden>
+      <div class="works-search" data-search>
+        <InkBorder />
+        <span class="works-search__icon" aria-hidden="true"><Icon name="search" /></span>
+        <button class="works-search__toggle" type="button" data-search-toggle aria-label="検索を開く" aria-expanded="false" aria-controls="work-search-input work-search-tags"><Icon name="search" /></button>
+        <label class="works-search__field" for="work-search-input"><span class="visually-hidden">作品を検索</span><input id="work-search-input" type="search" name="search" placeholder="SEARCH" autocomplete="off" data-search-input /></label>
+      </div>
+      <SegmentedControl label="作品の種類（個別に切り替え。両方消灯または両方点灯で全作品を表示）" name="kind" selected="" options={[{value:'provided',label:'Provided'},{value:'original',label:'Original'}]} />
+      <span class="works-toolbar__divider" aria-hidden="true"><InkBorder shape="vertical-line" /></span>
+      <SegmentedControl label="並び順" name="sort" selected="latest" options={[{value:'latest',label:'Latest'},{value:'popular',label:'Popular'}]} />
+      <div class="works-search-tags" id="work-search-tags" data-search-tags hidden>
+        <div class="works-search-tags__header">
+          <span>タグで絞り込む</span>
+          <button type="button" data-search-reset>検索をリセット</button>
+          <button type="button" data-search-close aria-label="検索候補を閉じる">閉じる ×</button>
+        </div>
+        <div class="works-search-tags__group" role="group" aria-label="GYU Pの担当範囲">
+          {['作詞', '作曲', '編曲'].map(role => <button class="works-tag" type="button" data-search-tag="role" data-tag-value={role} aria-pressed="false">{role}</button>)}
+        </div>
+        <div class="works-search-tags__group" role="group" aria-label="歌唱者">
+          {artists.map(artist => <button class="works-tag" type="button" data-search-tag="artist" data-tag-value={artist} aria-pressed="false">{artist}</button>)}
+        </div>
+      </div>
+      <span class="works-toolbar__rule" aria-hidden="true"><InkBorder shape="line" /></span>
+    </div>
+    <p class="visually-hidden" role="status" aria-live="polite" data-results></p>
+    <div class="works-grid" data-grid>{works.map((work, index) => <WorkCard work={work} index={index} />)}</div>
+    <p class="works-empty" data-empty hidden>該当する作品が見つかりません。検索語や作品の種類を変更してください。</p>
+    {works.some(work => work.sample) && <p class="works-note">掲載作品はデザイン確認用のサンプルです。</p>}
+    <noscript><p>作品の検索・絞り込み・詳細表示には JavaScript が必要です。現在は全作品のジャケットを表示しています。</p></noscript>
+    <dialog class="work-dialog" id="work-dialog" aria-labelledby="work-dialog-title">
+      <button class="work-dialog__close" type="button" data-close-dialog aria-label="詳細を閉じる" autofocus>×</button>
+      <div data-dialog-content></div>
+    </dialog>
+  </works-gallery>
+</SiteLayout>
+<script>
+  import '../scripts/works-gallery';
+</script>

@@ -1,0 +1,32 @@
+---
+import SiteMenu from './SiteMenu.astro';
+import InkBorder from './InkBorder.astro';
+import type { PageId } from '../data/site';
+interface Props { currentPage: PageId; }
+const { currentPage } = Astro.props;
+---
+<mobile-site-menu>
+  <button class="mobile-menu-toggle" type="button" data-menu-open aria-label="メニューを開く" aria-expanded="false" aria-controls="mobile-menu-dialog" hidden><span></span><span></span><span></span><InkBorder shape="circle" /></button>
+  <dialog class="mobile-menu-dialog" id="mobile-menu-dialog" aria-label="サイトメニュー">
+    <button class="mobile-menu-close" type="button" data-menu-close aria-label="メニューを閉じる" autofocus>×</button>
+    <div data-menu-content></div>
+    <template data-menu-template><SiteMenu currentPage={currentPage} overlay /></template>
+  </dialog>
+</mobile-site-menu>
+<script>
+  import '../scripts/mobile-menu';
+</script>
+<style>
+  .mobile-menu-toggle { position: fixed; right: 12px; top: var(--mobile-menu-toggle-top, 76px); z-index: 40; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px; width: 48px; height: 48px; padding: 0; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-paper); animation: mobile-menu-peek 420ms ease-out both; }
+  @keyframes mobile-menu-peek {
+    0% { transform: translateX(72px) rotate(12deg) scale(.9); opacity: 0; }
+    70% { transform: translateX(-5px) rotate(-3deg) scale(1); opacity: 1; }
+    100% { transform: translateX(0) rotate(0) scale(1); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .mobile-menu-toggle { animation: none; } }
+  .mobile-menu-toggle > span { width: 21px; height: 1px; background: var(--color-ink); }
+  .mobile-menu-dialog { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; overflow-y: auto; color: var(--color-ink); background: var(--color-paper); }
+  .mobile-menu-dialog::backdrop { background: var(--color-paper); }
+  .mobile-menu-close { position: fixed; top: max(12px, env(safe-area-inset-top)); right: 16px; z-index: 2; width: 44px; height: 44px; border: 0; padding: 0; color: var(--color-ink); background: transparent; font-size: 32px; }
+  @media (min-width: 841px) { .mobile-menu-toggle { display: none; } }
+</style>

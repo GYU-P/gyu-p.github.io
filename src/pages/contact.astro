@@ -1,0 +1,99 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { site } from '../data/site';
+import InkBorder from '../components/InkBorder.astro';
+const emailCodes = Array.from(`${site.contactEmail.name}@${site.contactEmail.domain}`, character => character.charCodeAt(0)).join(',');
+---
+<SiteLayout page="contact" title="CONTACT">
+  <section class="page-copy" aria-labelledby="page-title">
+    <h1 id="page-title">CONTACT</h1>
+    <p>{site.contactIntro}</p>
+    <p>ご依頼・ご相談は、XのDMまたはメールにてお気軽にお送りください。</p>
+    <div class="contact-options">
+      <section class="contact-option" aria-labelledby="contact-dm">
+        <span class="contact-option__rule"><InkBorder shape="line" /></span>
+        <h2 id="contact-dm">X / Twitter DM</h2>
+        <p>アカウントのメッセージからご連絡ください。</p>
+        <a class="text-link" href={site.contactTwitter} target="_blank" rel="noopener noreferrer">@GYUP_bokaroP ↗<span class="visually-hidden">（X、新しいタブで開きます）</span></a>
+      </section>
+      <section class="contact-option" aria-labelledby="contact-email">
+        <span class="contact-option__rule"><InkBorder shape="line" /></span>
+        <h2 id="contact-email">EMAIL</h2>
+        <p>メールでのご連絡はこちらから。</p>
+        <contact-email data-email-codes={emailCodes}>
+          <button class="text-link" type="button" data-reveal hidden aria-expanded="false" aria-controls="contact-email-details">メールアドレスを表示</button>
+          <div id="contact-email-details" data-email-details hidden>
+            <p class="contact-address" data-email-address></p>
+            <div class="contact-actions">
+              <a class="text-link" data-mailto>メールを作成 ↗</a>
+              <button class="text-link" type="button" data-copy>アドレスをコピー</button>
+            </div>
+          </div>
+          <p class="contact-status" role="status" aria-live="polite" data-copy-status></p>
+        </contact-email>
+        <noscript><p>{site.contactEmail.name} [at] {site.contactEmail.domain}<br />[at] を @ に置き換えてお送りください。</p></noscript>
+      </section>
+    </div>
+    <section class="contact-guide" aria-labelledby="contact-guide-title">
+      <h2 id="contact-guide-title">ご依頼の際に</h2>
+      <p>お決まりの範囲で、以下をお知らせいただけるとスムーズです。</p>
+      <ul>
+        <li>お名前・活動名</li>
+        <li>ご依頼内容・楽曲のイメージや用途</li>
+        <li>ご希望の納期・ご予算</li>
+      </ul>
+    </section>
+  </section>
+</SiteLayout>
+
+<script>
+  class ContactEmail extends HTMLElement {
+    connectedCallback() {
+      const reveal = this.querySelector<HTMLButtonElement>('[data-reveal]')!;
+      const details = this.querySelector<HTMLElement>('[data-email-details]')!;
+      const address = this.querySelector<HTMLElement>('[data-email-address]')!;
+      const mailto = this.querySelector<HTMLAnchorElement>('[data-mailto]')!;
+      const copy = this.querySelector<HTMLButtonElement>('[data-copy]')!;
+      const status = this.querySelector<HTMLElement>('[data-copy-status]')!;
+      reveal.hidden = false;
+      reveal.onclick = () => {
+        const email = String.fromCharCode(...this.dataset.emailCodes!.split(',').map(Number));
+        address.textContent = email;
+        mailto.href = `mailto:${email}`;
+        details.hidden = false;
+        reveal.setAttribute('aria-expanded', 'true');
+        mailto.focus();
+        reveal.hidden = true;
+        copy.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(email);
+            status.textContent = 'メールアドレスをコピーしました。';
+          } catch {
+            status.textContent = 'コピーできませんでした。上のアドレスを選択してコピーしてください。';
+          }
+        };
+      };
+    }
+  }
+  if (!customElements.get('contact-email')) customElements.define('contact-email', ContactEmail);
+</script>
+
+<style>
+  .contact-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; margin: 38px 0 42px; }
+  .contact-option { position: relative; min-width: 0; padding-top: 24px; }
+  .contact-option__rule { position: absolute; top: 0; left: 0; right: 0; height: 1px; --ink-color: var(--color-ink-soft); --ink-weight: .6; }
+  .contact-option h2 { margin: 0 0 10px; font: 400 24px/1.4 var(--font-display); letter-spacing: .08em; }
+  .contact-option p { margin: 0 0 10px; }
+  .contact-option .text-link { align-items: center; justify-content: center; min-height: 44px; margin-top: 8px; font: 400 14px/1.5 var(--font-body); letter-spacing: .02em; border-color: var(--color-ink-soft); border-radius: 3px; transition: background var(--duration-fast); }
+  .contact-option .text-link:hover { background: var(--color-selected-hover); }
+  .contact-option contact-email { display: block; }
+  .contact-address { overflow-wrap: anywhere; user-select: all; font-size: 18px; letter-spacing: .03em; }
+  .contact-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .contact-option .contact-status { min-height: 1.5em; margin: 8px 0 0; font-size: 12px; }
+  .contact-guide { padding: 22px 24px; border-left: 2px solid var(--color-ink-soft); background: #4b459c05; }
+  .contact-guide h2 { margin: 0 0 12px; font-size: 18px; font-weight: 500; }
+  .contact-guide p { margin: 0 0 8px; }
+  .contact-guide ul { margin: 0; padding-left: 1.4em; color: var(--color-ink-copy); line-height: 1.9; }
+  @media (max-width: 1100px) { .contact-options { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+  @media (max-width: 840px) { .contact-guide { padding: 18px; } }
+</style>

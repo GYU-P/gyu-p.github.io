@@ -1,0 +1,11 @@
+# Windows の実行制限がある環境でも、公式の WebAssembly コンパイラに
+# フォールバックできるよう、現在のCPUとWASMの両方をインストールする。
+supportedArchitectures:
+  os:
+    - current
+  cpu:
+    - current
+    - wasm32
+onlyBuiltDependencies:
+  - esbuild
+  - sharp

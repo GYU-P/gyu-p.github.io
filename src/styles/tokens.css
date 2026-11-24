@@ -1,0 +1,32 @@
+/* サイト全体の見た目はここから変更。各部品の寸法はコンポーネント側で管理。 */
+:root {
+  --color-ink: #4b459c;
+  --color-muted: #8179ae;
+  --color-ink-border: var(--color-ink);
+  --color-ink-edge: var(--color-ink);
+  --color-ink-decoration: var(--color-ink);
+  --color-ink-soft: #b7b3cf;
+  --color-ink-copy: #665d84;
+  --color-ink-label: #6664b6;
+  --ink-texture-regular: .8;
+  --ink-texture-strong: 1.5;
+  --ink-texture-sidebar-lines: 1.2;
+  --ink-density-standard: 1.2;
+  /* Each border adds its own offset. Override --ink-seed for an exact seed. */
+  --ink-seed-base: 200;
+  --color-paper: #f8f5f1;
+  --color-paper-side: #f2ece6;
+  --color-line: var(--color-ink);
+  --color-selected: #f1d9df;
+  --color-selected-hover: #f4e2e5;
+  --color-accent: #ee7096;
+  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-body: 'Zen Kaku Gothic New', sans-serif;
+  --font-weight-display: 400;
+  --sidebar-width: clamp(235px, 17.6vw, 300px);
+  --sheet-gap: 18px;
+  --mobile-menu-height: 144px;
+  --paper-mobile-width: 960px;
+  --shadow-control: none;
+  --duration-fast: 180ms;
+}

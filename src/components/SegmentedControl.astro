@@ -1,0 +1,47 @@
+---
+import InkBorder from './InkBorder.astro';
+import StatusLight from './StatusLight.astro';
+interface Props {
+  label: string;
+  name: string;
+  options: { value: string; label: string }[];
+  selected: string;
+}
+const { label, name, options, selected } = Astro.props;
+// Stable, distinct seeds for each toggle and each button within it.
+const inkSeed = Array.from(name).reduce((seed, character) => (Math.imul(seed, 31) + character.charCodeAt(0)) >>> 0, 9187);
+---
+<div class="segmented-control" role="group" aria-label={label}>
+  <InkBorder seed={name === 'sort' ? undefined : inkSeed} />
+  <svg class="segmented-control__ribs" width="14" height="20" viewBox="0 0 14 20" shape-rendering="crispEdges" aria-hidden="true">{[0, 4, 8, 12].map(x => <rect x={x} y="0" width="2" height="20" />)}</svg>
+  <div class="segmented-control__track">
+    {options.map((option, index) => <button class="segmented-control__button" type="button" data-filter={name} data-value={option.value} aria-pressed={option.value === selected}>
+      <StatusLight />
+      <span>{option.label}</span>
+      <InkBorder seed={name === 'sort' ? undefined : inkSeed + (index + 1) * 1009} />
+    </button>)}
+  </div>
+  <svg class="segmented-control__ribs" width="14" height="20" viewBox="0 0 14 20" shape-rendering="crispEdges" aria-hidden="true">{[0, 4, 8, 12].map(x => <rect x={x} y="0" width="2" height="20" />)}</svg>
+</div>
+<style>
+  .segmented-control { position: relative; display: grid; grid-template-columns: 30px minmax(0, 1fr) 30px; align-items: center; padding: 4px 0; min-width: 0; height: 51px; border: 1px solid var(--color-line); border-radius: 2px; box-shadow: var(--shadow-control); background: var(--paper-surface); }
+  .segmented-control__ribs { display: block; justify-self: center; width: 14px; height: 20px; fill: var(--color-ink); }
+  .segmented-control__track { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; min-width: 0; }
+  .segmented-control__button { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; min-height: 36px; padding: 0 5px; border: 1px solid var(--color-line); border-radius: 1px; background: var(--paper-surface); font: var(--font-weight-display) 12px/1 var(--font-display); text-transform: uppercase; }
+  .segmented-control__button:hover { box-shadow: none; }
+  .segmented-control__button :global(.status-light) { width: 11px; height: 11px; flex-basis: 11px; }
+  .segmented-control__button[aria-pressed='true'] :global(.status-light) { border-width: 3px; }
+  @media (max-width: 1240px) {
+    .segmented-control { height: 42px; padding: 3px 0; }
+    .segmented-control__track { gap: 1px; }
+    .segmented-control__button { gap: 2px; min-height: 34px; padding: 0 1px; font-size: 11px; }
+    .segmented-control__button :global(.status-light) { width: 9px; height: 9px; flex-basis: 9px; }
+    .segmented-control__button[aria-pressed='true'] :global(.status-light) { border-width: 3px; }
+  }
+  @media (max-width: 840px) {
+    .segmented-control { gap: 0; padding: 3px 0; }
+    .segmented-control__button { font-size: clamp(7.8px, 2.2vw, 10px); gap: 3px; padding: 0; white-space: nowrap; }
+    .segmented-control__button :global(.status-light) { width: 6px; height: 6px; flex-basis: 6px; }
+    .segmented-control__button[aria-pressed='true'] :global(.status-light) { border-width: 2px; }
+  }
+</style>

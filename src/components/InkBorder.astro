@@ -1,0 +1,5 @@
+---
+interface Props { shape?: 'rectangle' | 'vertical' | 'circle' | 'line' | 'vertical-line'; outer?: boolean; seed?: number; }
+const { shape = 'rectangle', outer = false, seed } = Astro.props;
+---
+<ink-border data-shape={shape} data-outer={outer ? '' : undefined} data-seed={seed} aria-hidden="true"></ink-border>
